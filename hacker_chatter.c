@@ -1,14 +1,7 @@
-// Hacker Chatter: a Built-In instant chatting system!
-//
-// Ported to C by Jake (jnaor)
-// Made in Bash by Simyon (shien) and Jake (jnaor)
-//
-// Just type "make" to compile
-// and then run "./hak_chat"
-// to boot up the interface!
-//
-// only for the *coolest* of coders XD
-// -----------------------------------------------
+/** Hacker Chatter: an instant chatting system for multi user POSIX environments.
+ *
+ * only for the *coolest* of coders XD
+ */
 
 #define _XOPEN_SOURCE 700
 #define _POSIX_C_SOURCE 200809L
