@@ -2,7 +2,7 @@ CC := gcc
 CFLAGS := -std=c11 -Wall -Wextra -Wpedantic -O2
 LDFLAGS := -lncurses
 
-TARGET := hak_chat
+TARGET := hak-chat
 SOURCE := hacker_chatter.c
 
 .PHONY: all clean
