@@ -20,13 +20,14 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <ncurses.h>
 
 #ifndef CHAT_FILE
 #define CHAT_FILE "/tmp/hak-chat/chat"
 #endif
 
 #ifndef CHAT_SESSION
-#define CHAT_SESSION "js_chat"
+#define CHAT_SESSION "hak-chat"
 #endif
 
 static int run_command(char *const argv[], int quiet)
