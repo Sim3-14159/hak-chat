@@ -6,7 +6,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
+struct WString {
+    size_t len;
+    wchar_t *content;
+    size_t pos;
+};
+
+
 void repeat(wchar_t chr, int num, wchar_t buffer[]);
+void insert(int pos, wchar_t val, wchar_t str[]);
 
 int main()
 {
@@ -15,27 +24,35 @@ int main()
     // init ncurses
     initscr();
 
-    // Optional configurations
     cbreak(); // Line buffering disabled
-    noecho(); // Don't echo user input
-    //keypad(stdscr, TRUE); // Enable arrow keys, F-keys, etc.
+    noecho();
+    keypad(stdscr, TRUE); // Enable arrow keys, F-keys, etc.
 
     int height, width;
     getmaxyx(stdscr, height, width);
+    int y, x;
+    getyx(stdscr, y, x);
+    // Cursor position, within textarea (|Hello = 0, H|ello = 1, He|llo = 2, etc)
+    int textCursorOffset = 0;
 
     wchar_t *userInput = malloc(10000 * sizeof(wchar_t));
     int where = 0;
 
-    while (running) { 
+    while (running) {
         erase();
         getmaxyx(stdscr, height, width);
+        getyx(stdscr, y, x);
+
         addwstr(L"Testing | Press 'q' to quit.");
-        addwstr(L"\nThis should be on a new line");
 
         wchar_t *buffer = (wchar_t *)malloc(30 * sizeof(wchar_t));
         swprintf(buffer, 30, L"Screen size: %dx%d\n\n", width, height);
         addwstr(buffer);
         free(buffer);
+
+        for (int tempHeight = height; tempHeight > 5; tempHeight--) {
+            addwstr(L"\n");
+        }
 
         wchar_t top[500];
         repeat(L'─', width - 10, top);
@@ -45,57 +62,65 @@ int main()
         addwstr(L"╮  \n");
 
         repeat(L' ', width - 10 - wcslen(userInput), top);
-        addwstr(L"    |");
+        addwstr(L"    │");
         addwstr(userInput);
         addwstr(top);
-        addwstr(L"|  \n");
+        addwstr(L"│  \n");
 
         repeat(L'─', width - 10, top);
         addwstr(L"    ╰");
         addwstr(top);
         addwstr(L"╯  \n");
 
+        move(height - 2, 5 + textCursorOffset);
+
         wint_t key;
         int status = get_wch(&key);
         switch (status) {
             case OK: // Regular keypress
+                insert(where, key, userInput);
+                where++;
+                textCursorOffset++;
+                break;
+
+            case KEY_CODE_YES: // Control or arrow keycode
                 switch (key) {
-                    case 8: case 127: // Backspace or Delete
+                    case KEY_LEFT:
+                        if (textCursorOffset > 0) {
+                            textCursorOffset--;
+                            where--;
+                        }
+                        break;
+                    case KEY_RIGHT:
+                        if (textCursorOffset < (int)wcslen(userInput)) {
+                            textCursorOffset++;
+                            where++;
+                        }
+                        break;
+                    case KEY_DOWN:
+                        // TODO: add KEY_DOWN and KEY_UP movement
+                        userInput[where] = L'D';
+                        where++;
+                        break;
+                    case KEY_UP:
+                        userInput[where] = L'R';
+                        where++;
+                        break;
+                    case 18: // Ctrl+R
+                        userInput[where] = L'^';
+                        where++;
+                        break;
+                    case 8: case KEY_BACKSPACE: // Backspace
                         if (where <= 0) {
-                            printf("\a"); // Beep sound
+                            addwstr(L"\a"); // Beep sound
                             break;
                         }
                         where--;
-                        userInput[where] = '\0';
+                        textCursorOffset--;
+                        userInput[wcslen(userInput) - 2] = '\0'; // remove end of text
                         break;
                     default:
-                        userInput[where] = key;
-                        where++;
-                        break;
-                }
-                break;
-
-            case KEY_CODE_YES: // Control keycode
-                switch (key) {
-                    case KEY_LEFT:
-                        userInput[where] = L'L';
-                        where++;
-                        addwstr(L"You pressed LEFT");
-                        break;
-                    case 18: // Ctrl+R
-                        addwstr(L"You pressed Ctrl+R");
-                        break;
-                    case KEY_UP:
-                        addwstr(L"You pressed UP");
-                        break;
-                    case KEY_DOWN:
-                        addwstr(L"You pressed DOWN");
-                        break;
-                    case KEY_RIGHT:
-                        addwstr(L"You pressed RIGHT");
-                        break;
-                    default:
-                        addwstr(L"Unknown control key pressed");
+                        addwstr(L"Unknown control key pressed: ");
                         break;
                 }
                 break;
@@ -118,4 +143,12 @@ void repeat(wchar_t chr, int num, wchar_t buffer[])
     for (int i = 0; i < num; i++)
         repeatedStr[i] = chr;
     wcscpy(buffer, repeatedStr);
+}
+
+// NOT OVERFLOW SAFE! TODO: Make WString struct and supporting memory safe funcs
+void insert(int pos, wchar_t val, wchar_t str[])
+{
+    for (int tempPos = wcslen(str); tempPos > pos; tempPos--)
+        str[tempPos] = str[tempPos - 1];
+    str[pos] = val;
 }

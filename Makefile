@@ -1,11 +1,11 @@
 CC := gcc
 CFLAGS := -std=c11 -Wall -Wextra -Wpedantic -O2
-LDFLAGS := -lncurses
+LDFLAGS := -lncursesw
 
 TARGET := hak-chat
 SOURCE := hacker_chatter.c
 
-.PHONY: all clean
+.PHONY: all clean test-ncurses
 
 all: $(TARGET)
 
@@ -14,3 +14,6 @@ $(TARGET): $(SOURCE)
 
 clean:
 	$(RM) $(TARGET)
+
+test-ncurses: ncurses_test.c
+	$(CC) $(CFLAGS) ncurses_test.c -o test-ncurses $(LDFLAGS)
