@@ -14,6 +14,3 @@ $(TARGET): $(SOURCE)
 
 clean:
 	$(RM) $(TARGET)
-
-test-ncurses: ncurses_test.c
-	$(CC) $(CFLAGS) ncurses_test.c -o test-ncurses $(LDFLAGS)

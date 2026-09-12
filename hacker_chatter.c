@@ -4,6 +4,7 @@
 #include <ncursesw/ncurses.h>
 #include <wchar.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define MAX_LINES 100
 #define MAX_COLS 1024
@@ -19,7 +20,6 @@
 #define FALSE 0
 #endif
 
-static int line_count = 1;
 static int cursor_y = 0;
 static int cursor_x = 0;
 
@@ -48,7 +48,7 @@ static void draw_editor(WINDOW *win)
     box(win, 0, 0); // border
 
     // Text starts at row 1, column 1 because row 0 & column 0 are used by the border.
-    for (int y = 0; y < line_count && y < height - 2; y++) {
+    for (int y = 0; y < (int) text.line_count && y < height - 2; y++) {
         mvwaddwstr(win, y + 1, 1, text.text[y]);
     }
 
@@ -74,11 +74,11 @@ static void insert(wchar_t ch)
 
 static void new_line(void)
 {
-    if (line_count >= MAX_LINES)
+    if (text.line_count >= MAX_LINES)
         return;
 
     // Move existing lines down.
-    for (int i = line_count; i > cursor_y + 1; i--) {
+    for (int i = text.line_count; i > cursor_y + 1; i--) {
         wcscpy(text.text[i], text.text[i - 1]);
     }
 
@@ -98,7 +98,7 @@ static void new_line(void)
 
     text.text[cursor_y][cursor_x] = L'\0';
 
-    line_count++;
+    text.line_count++;
 
     cursor_y++;
     cursor_x = 0;
@@ -128,13 +128,13 @@ static void backspace(void)
         wcscat(text.text[cursor_y - 1], text.text[cursor_y]);
 
         // Move following lines up.
-        for (int i = cursor_y; i < line_count - 1; i++) {
+        for (int i = cursor_y; i < (int) text.line_count - 1; i++) {
             wcscpy(text.text[i], text.text[i + 1]);
         }
 
-        text.text[line_count - 1][0] = L'\0';
+        text.text[text.line_count - 1][0] = L'\0';
 
-        line_count--;
+        text.line_count--;
 
         cursor_y--;
         cursor_x = previous_len;
@@ -155,7 +155,7 @@ static void delete_char(void)
         return;
     }
 
-    if (cursor_y + 1 < line_count) { // at beginning of line
+    if (cursor_y + 1 < (int) text.line_count) { // at beginning of line
         size_t current_len = wcslen(text.text[cursor_y]);
         size_t next_len = wcslen(text.text[cursor_y + 1]);
 
@@ -165,13 +165,13 @@ static void delete_char(void)
         wcscat(text.text[cursor_y], text.text[cursor_y + 1]);
 
         // Move remaining lines up.
-        for (int i = cursor_y + 1; i < line_count - 1; i++) {
+        for (int i = cursor_y + 1; i < (int) text.line_count - 1; i++) {
             wcscpy(text.text[i], text.text[i + 1]);
         }
 
-        text.text[line_count - 1][0] = L'\0';
+        text.text[text.line_count - 1][0] = L'\0';
 
-        line_count--;
+        text.line_count--;
     }
 }
 
@@ -194,7 +194,7 @@ static void move_right(void)
     if (cursor_x < len) {
         cursor_x++;
 
-    } else if (cursor_y + 1 < line_count) {
+    } else if (cursor_y + 1 < (int) text.line_count) {
         cursor_y++;
 
         cursor_x = 0;
@@ -210,19 +210,21 @@ static void move_up(void)
 
         if (cursor_x > len)
             cursor_x = len;
-    }
+    } else if (cursor_y == 0)
+        cursor_x = 0;
 }
 
 static void move_down(void)
 {
-    if (cursor_y + 1 < line_count) {
+    if (cursor_y + 1 < (int) text.line_count) {
         cursor_y++;
 
         int len = wcslen(text.text[cursor_y]);
 
         if (cursor_x > len)
             cursor_x = len;
-    }
+    } else if (cursor_y + 1 == (int) text.line_count)
+        cursor_x = wcslen(text.text[cursor_y]);
 }
 
 int main(void)
@@ -248,32 +250,31 @@ int main(void)
     int height = LINES - 4;
     int width = COLS - 4;
 
-    WINDOW *editor = newwin((int) (height / 3), width + 1, 8, 1);
+    WINDOW *editor = newwin((int) (height / 3), width + 1, height - (text.line_count + 8), 1);
+    WINDOW *messages = newwin((int) (height * 2 / 3 - 2), width + 1, 1, 1);
 
     if (editor == NULL) {
         endwin();
         fprintf(stderr, "Failed to create editor window.\n");
         return 1;
     }
+    if (messages == NULL) {
+        endwin();
+        fprintf(stderr, "Failed to create messages window.\n");
+        return 1;
+    }
 
     keypad(editor, TRUE); // enable arrow and f keys
 
-    //wcscpy(text[0], L"Hello, world!");
-    //wcscpy(text[1], L"Type something here.");
-    //wcscpy(text[2], L"Unicode: 你好 世界");
-
-    line_count = 2;
-
     cursor_y = 0;
     cursor_x = 0;
-
     int running = TRUE;
 
     while (running) {
         draw_editor(editor);
+        draw_editor(messages);
 
         wint_t ch;
-
         int result = wget_wch(editor, &ch);
 
         if (result == OK) { // Normal character
@@ -323,6 +324,7 @@ int main(void)
     }
 
     delwin(editor);
+    delwin(messages);
     endwin();
 
     return 0;
