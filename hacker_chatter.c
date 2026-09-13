@@ -123,15 +123,13 @@ static void backspace(void)
             wcscpy(text.text[i], text.text[i + 1]);
 
         text.text[text.line_count - 1][0] = L'\0';
-
         text.line_count--;
-
         cursor_y--;
         cursor_x = previous_len;
         return;
     }
 
-    beep(); // if at beginning of message and try to delete, beep
+    beep(); // if at beginning of message and trying to press backspace, beep
 }
 
 static void delete_char(void)
@@ -158,9 +156,11 @@ static void delete_char(void)
             wcscpy(text.text[i], text.text[i + 1]);
 
         text.text[text.line_count - 1][0] = L'\0';
-
         text.line_count--;
+        return;
     }
+
+    beep(); // if at end of message and trying to delete, beep
 }
 
 static void move_left(void)
