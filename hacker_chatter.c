@@ -34,6 +34,23 @@ struct WText {
 struct WText text = {
     .len = (size_t) MAX_COLS * MAX_LINES, .text = {L"Type something here."}, .line_count = 1};
 
+/*************** MESSAGING FUNCTIONS ******************/
+
+// 0: success, nonzero: failure
+static int send_message(struct WText *message)
+{
+    // ... TODO implement
+    return 0;
+}
+
+static struct WText *render_message(struct WText *message)
+{
+    // ... TODO implement
+    return message;
+}
+
+/*************** EDITOR FUNCTIONS ******************/
+
 // Draw the editor, and surrounding box
 static void draw_editor(WINDOW *win)
 {
@@ -325,6 +342,9 @@ int main(void)
     delwin(editor);
     delwin(messages);
     endwin();
+
+    fprintf(stdout, "[Exit]\n");
+    fflush(stdout);
 
     return 0;
 }
