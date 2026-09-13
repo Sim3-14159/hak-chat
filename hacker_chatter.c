@@ -131,7 +131,7 @@ static void backspace(void)
         return;
     }
 
-    beep();
+    beep(); // if at beginning of message and try to delete, beep
 }
 
 static void delete_char(void)
@@ -266,58 +266,59 @@ int main(void)
         wint_t ch;
         int result = wget_wch(editor, &ch);
 
-        if (result == OK) { // Normal character
-            if (ch == L'\n' ||
-                ch == L'\r') // newline (can be OK , L'\n' or KEY_CODE_YES , KEY_ENTER)
-                new_line();
-            else if (ch == 127) // backspace (can be OK - 127 or KEY_CODE_YES - KEY_BACKSPACE)
-                backspace();
-            else if (ch >= L' ') // Printable Unicode character.
-                insert(ch);
-            else if (ch == CTRL('x')) // quit
-                running = FALSE;
-
-        }
-
-        else if (result == KEY_CODE_YES) { // Special key
-            switch (ch) {
-                case KEY_LEFT:
-                    move_left();
-                    break;
-
-                case KEY_RIGHT:
-                    move_right();
-                    break;
-
-                case KEY_UP:
-                    move_up();
-                    break;
-
-                case KEY_DOWN:
-                    move_down();
-                    break;
-
-                case KEY_BACKSPACE:
-                    backspace();
-                    break;
-
-                case KEY_DC:
-                    delete_char();
-                    break;
-
-                case KEY_ENTER:
+        switch (result) {
+            case OK: // Normal character
+                if (ch == L'\n' ||
+                    ch == L'\r') // newline (can be OK , L'\n' or KEY_CODE_YES , KEY_ENTER)
                     new_line();
-                    break;
+                else if (ch == 127) // backspace (can be OK - 127 or KEY_CODE_YES - KEY_BACKSPACE)
+                    backspace();
+                else if (ch >= L' ') // Printable Unicode character.
+                    insert(ch);
+                else if (ch == CTRL('x')) // quit
+                    running = FALSE;
 
-                case KEY_RESIZE: {
-                    getmaxyx(stdscr, height, width);
-                    // TODO: get rid of dependency on -4
-                    // (right now there are a lot of hardcoded numbers)
-                    height -= 4;
-                    width -= 4;
-                    break;
+                break;
+
+            case KEY_CODE_YES: // Special key
+                switch (ch) {
+                    case KEY_LEFT:
+                        move_left();
+                        break;
+
+                    case KEY_RIGHT:
+                        move_right();
+                        break;
+
+                    case KEY_UP:
+                        move_up();
+                        break;
+
+                    case KEY_DOWN:
+                        move_down();
+                        break;
+
+                    case KEY_BACKSPACE:
+                        backspace();
+                        break;
+
+                    case KEY_DC:
+                        delete_char();
+                        break;
+
+                    case KEY_ENTER:
+                        new_line();
+                        break;
+
+                    case KEY_RESIZE:
+                        getmaxyx(stdscr, height, width);
+                        // TODO: get rid of dependency on -4
+                        // (right now there are a lot of hardcoded numbers)
+                        height -= 4;
+                        width -= 4;
+                        break;
                 }
-            }
+                break;
         }
     }
 
