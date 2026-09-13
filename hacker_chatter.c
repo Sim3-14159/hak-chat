@@ -9,6 +9,8 @@
 #define MAX_LINES 100
 #define MAX_COLS 1024
 
+// Control + <key> is actually an overlay of 0x1F on <key>
+// Control + 'x' becomes 'x' & Ox1F
 #ifndef CTRL
 #define CTRL(c) ((c) & 0x1F)
 #endif
@@ -41,9 +43,8 @@ static void draw_editor(WINDOW *win)
     box(win, 0, 0); // border
 
     // Text starts at row 1, column 1 because row 0 & column 0 are used by the border.
-    for (int y = 0; y < (int) text.line_count && y < editorheight - 2; y++) {
+    for (int y = 0; y < (int) text.line_count && y < editorheight - 2; y++)
         mvwaddwstr(win, y + 1, 1, text.text[y]);
-    }
 
     // Put cursor inside the border.
     wmove(win, cursor_y + 1, cursor_x + 1);
@@ -57,9 +58,8 @@ static void insert(wchar_t ch)
     if (wcslen(text.text[cursor_y]) >= MAX_COLS - 1)
         return;
 
-    for (size_t i = wcslen(text.text[cursor_y]) + 1; i > (size_t) cursor_x; i--) {
+    for (size_t i = wcslen(text.text[cursor_y]) + 1; i > (size_t) cursor_x; i--)
         text.text[cursor_y][i] = text.text[cursor_y][i - 1];
-    }
 
     text.text[cursor_y][cursor_x] = ch;
     cursor_x++;
@@ -71,9 +71,8 @@ static void new_line(void)
         return;
 
     // Move existing lines down.
-    for (int i = text.line_count; i > cursor_y + 1; i--) {
+    for (int i = text.line_count; i > cursor_y + 1; i--)
         wcscpy(text.text[i], text.text[i - 1]);
-    }
 
     /*
      * Move text after cursor to the new line.
@@ -102,9 +101,8 @@ static void backspace(void)
     if (cursor_x > 0) {
         size_t len = wcslen(text.text[cursor_y]);
 
-        for (size_t i = cursor_x; i <= len; i++) {
+        for (size_t i = cursor_x; i <= len; i++)
             text.text[cursor_y][i - 1] = text.text[cursor_y][i];
-        }
 
         cursor_x--;
 
@@ -121,9 +119,8 @@ static void backspace(void)
         wcscat(text.text[cursor_y - 1], text.text[cursor_y]);
 
         // Move following lines up.
-        for (int i = cursor_y; i < (int) text.line_count - 1; i++) {
+        for (int i = cursor_y; i < (int) text.line_count - 1; i++)
             wcscpy(text.text[i], text.text[i + 1]);
-        }
 
         text.text[text.line_count - 1][0] = L'\0';
 
@@ -142,9 +139,8 @@ static void delete_char(void)
     size_t len = wcslen(text.text[cursor_y]);
 
     if (cursor_x < (int) len) {
-        for (size_t i = cursor_x; i < len; i++) {
+        for (size_t i = cursor_x; i < len; i++)
             text.text[cursor_y][i] = text.text[cursor_y][i + 1];
-        }
 
         return;
     }
@@ -170,12 +166,11 @@ static void delete_char(void)
 
 static void move_left(void)
 {
-    if (cursor_x > 0) {
+    if (cursor_x > 0)
         cursor_x--;
 
-    } else if (cursor_y > 0) {
+    else if (cursor_y > 0) {
         cursor_y--;
-
         cursor_x = wcslen(text.text[cursor_y]);
     }
 }
@@ -184,12 +179,10 @@ static void move_right(void)
 {
     int len = wcslen(text.text[cursor_y]);
 
-    if (cursor_x < len) {
+    if (cursor_x < len)
         cursor_x++;
-
-    } else if (cursor_y + 1 < (int) text.line_count) {
+    else if (cursor_y + 1 < (int) text.line_count) {
         cursor_y++;
-
         cursor_x = 0;
     }
 }
@@ -198,11 +191,10 @@ static void move_up(void)
 {
     if (cursor_y > 0) {
         cursor_y--;
-
         int len = wcslen(text.text[cursor_y]);
-
         if (cursor_x > len)
             cursor_x = len;
+
     } else if (cursor_y == 0)
         cursor_x = 0;
 }
@@ -211,11 +203,10 @@ static void move_down(void)
 {
     if (cursor_y + 1 < (int) text.line_count) {
         cursor_y++;
-
         int len = wcslen(text.text[cursor_y]);
-
         if (cursor_x > len)
             cursor_x = len;
+
     } else if (cursor_y + 1 == (int) text.line_count)
         cursor_x = wcslen(text.text[cursor_y]);
 }
