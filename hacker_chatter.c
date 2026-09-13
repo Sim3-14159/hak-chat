@@ -40,22 +40,20 @@ struct WText text = {.len = (size_t) MAX_COLS * MAX_LINES,
 // Draw the editor, and surrounding box
 static void draw_editor(WINDOW *win)
 {
-    int height, width;
-    getmaxyx(win, height, width);
-
-    werase(win);
+    int editorheight = getmaxy(win);
+    //werase(win);
 
     box(win, 0, 0); // border
 
     // Text starts at row 1, column 1 because row 0 & column 0 are used by the border.
-    for (int y = 0; y < (int) text.line_count && y < height - 2; y++) {
+    for (int y = 0; y < (int) text.line_count && y < editorheight - 2; y++) {
         mvwaddwstr(win, y + 1, 1, text.text[y]);
     }
 
     // Put cursor inside the border.
     wmove(win, cursor_y + 1, cursor_x + 1);
 
-    wrefresh(win);
+    //wrefresh(win);
 }
 
 // Insert into `text` a single wide character, at the text's cursor_y and cursor_x positions
@@ -166,9 +164,8 @@ static void delete_char(void)
         wcscat(text.text[cursor_y], text.text[cursor_y + 1]);
 
         // Move remaining lines up.
-        for (int i = cursor_y + 1; i < (int) text.line_count - 1; i++) {
+        for (int i = cursor_y + 1; i < (int) text.line_count - 1; i++)
             wcscpy(text.text[i], text.text[i + 1]);
-        }
 
         text.text[text.line_count - 1][0] = L'\0';
 
@@ -251,7 +248,7 @@ int main(void)
     int height = LINES - 4;
     int width = COLS - 4;
 
-    WINDOW *editor = newwin(text.line_count + 2, width + 1, height - (text.line_count + 8), 1);
+    WINDOW *editor = newwin(text.line_count + 2, width + 1, height - (text.line_count - 2), 1);
     WINDOW *messages = newwin((int) (height * 2 / 3 - 2), width + 1, 1, 1);
 
     if (editor == NULL) {
@@ -272,8 +269,10 @@ int main(void)
     int running = TRUE;
 
     while (running) {
+        werase(editor);
+        wrefresh(editor);
+        mvwin(editor, height - (text.line_count - 2), 1);
         wresize(editor, text.line_count + 2, width + 1);
-        mvwin(editor, 1, 1);
 
         draw_editor(editor);
         //box(messages, 0, 0);
@@ -325,8 +324,9 @@ int main(void)
                     break;
 
                 case KEY_RESIZE: {
-                    int rows, cols;
-                    getmaxyx(stdscr, rows, cols);
+                    getmaxyx(stdscr, height, width);
+                    height -= 4;
+                    width -= 4;
                     break;
                 }
             }
