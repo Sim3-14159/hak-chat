@@ -141,7 +141,6 @@ static void delete_char(void)
     if (cursor_x < (int) len) {
         for (size_t i = cursor_x; i < len; i++)
             text.text[cursor_y][i] = text.text[cursor_y][i + 1];
-
         return;
     }
 
@@ -269,15 +268,15 @@ int main(void)
 
         if (result == OK) { // Normal character
             if (ch == L'\n' ||
-                ch == L'\r') { // newline (can be OK , L'\n' or KEY_CODE_YES , KEY_ENTER)
+                ch == L'\r') // newline (can be OK , L'\n' or KEY_CODE_YES , KEY_ENTER)
                 new_line();
-            } else if (ch == 127) { // backspace (can be OK - 127 or KEY_CODE_YES - KEY_BACKSPACE)
+            else if (ch == 127) // backspace (can be OK - 127 or KEY_CODE_YES - KEY_BACKSPACE)
                 backspace();
-            } else if (ch >= L' ') { // Printable Unicode character.
+            else if (ch >= L' ') // Printable Unicode character.
                 insert(ch);
-            } else if (ch == CTRL('x')) { // quit
+            else if (ch == CTRL('x')) // quit
                 running = FALSE;
-            }
+
         }
 
         else if (result == KEY_CODE_YES) { // Special key
