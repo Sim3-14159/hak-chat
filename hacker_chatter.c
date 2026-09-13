@@ -26,16 +26,11 @@ static int cursor_x = 0;
 struct WText {
     size_t len;
     wchar_t text[MAX_LINES][MAX_COLS];
-    int cursor_y;
-    int cursor_x;
     size_t line_count;
 };
 
-struct WText text = {.len = (size_t) MAX_COLS * MAX_LINES,
-                     .text = {L"Type something here."},
-                     .cursor_y = 0,
-                     .cursor_x = 0,
-                     .line_count = 1};
+struct WText text = {
+    .len = (size_t) MAX_COLS * MAX_LINES, .text = {L"Type something here."}, .line_count = 1};
 
 // Draw the editor, and surrounding box
 static void draw_editor(WINDOW *win)
@@ -269,6 +264,7 @@ int main(void)
     int running = TRUE;
 
     while (running) {
+        // TODO: fix ordering of this so cursor doesn't flash and move to other places
         werase(editor);
         wrefresh(editor);
         mvwin(editor, height - (text.line_count - 2), 1);
@@ -325,6 +321,8 @@ int main(void)
 
                 case KEY_RESIZE: {
                     getmaxyx(stdscr, height, width);
+                    // TODO: get rid of dependency on -4
+                    // (right now there are a lot of hardcoded numbers)
                     height -= 4;
                     width -= 4;
                     break;
