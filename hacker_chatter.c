@@ -32,10 +32,10 @@ struct WText {
 };
 
 struct WText text = {.len = (size_t) MAX_COLS * MAX_LINES,
-                     .text = {L"Testing", L"this is on a newline."},
+                     .text = {L"Type something here."},
                      .cursor_y = 0,
                      .cursor_x = 0,
-                     .line_count = 2};
+                     .line_count = 1};
 
 // Draw the editor, and surrounding box
 static void draw_editor(WINDOW *win)
@@ -138,6 +138,7 @@ static void backspace(void)
 
         cursor_y--;
         cursor_x = previous_len;
+        return;
     }
 
     beep();
@@ -236,7 +237,7 @@ int main(void)
     noecho();
     cbreak(); // no buffering
     keypad(stdscr, TRUE); // enable arrow and f keys
-    curs_set(1); // Show terminal cursor.
+    curs_set(TRUE); // Show terminal cursor.
 
     if (LINES < 10 || COLS < 30) {
         endwin();
@@ -250,7 +251,7 @@ int main(void)
     int height = LINES - 4;
     int width = COLS - 4;
 
-    WINDOW *editor = newwin((int) (height / 3), width + 1, height - (text.line_count + 8), 1);
+    WINDOW *editor = newwin(text.line_count + 2, width + 1, height - (text.line_count + 8), 1);
     WINDOW *messages = newwin((int) (height * 2 / 3 - 2), width + 1, 1, 1);
 
     if (editor == NULL) {
@@ -271,8 +272,11 @@ int main(void)
     int running = TRUE;
 
     while (running) {
+        wresize(editor, text.line_count + 2, width + 1);
+        mvwin(editor, 1, 1);
+
         draw_editor(editor);
-        draw_editor(messages);
+        //box(messages, 0, 0);
 
         wint_t ch;
         int result = wget_wch(editor, &ch);
@@ -319,6 +323,12 @@ int main(void)
                 case KEY_ENTER:
                     new_line();
                     break;
+
+                case KEY_RESIZE: {
+                    int rows, cols;
+                    getmaxyx(stdscr, rows, cols);
+                    break;
+                }
             }
         }
     }
