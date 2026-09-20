@@ -5,9 +5,7 @@
 #include <wchar.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#define MAX_LINES 100
-#define MAX_COLS 1024
+#include "wtext.h"
 
 // Control + <key> is actually an overlay of 0x1F on <key>
 // Control + 'x' becomes 'x' & Ox1F
@@ -25,29 +23,8 @@
 static int cursor_y = 0;
 static int cursor_x = 0;
 
-struct WText {
-    size_t len;
-    wchar_t text[MAX_LINES][MAX_COLS];
-    size_t line_count;
-};
-
 struct WText text = {
     .len = (size_t) MAX_COLS * MAX_LINES, .text = {L"Type something here."}, .line_count = 1};
-
-/*************** MESSAGING FUNCTIONS ******************/
-
-// 0: success, nonzero: failure
-static int send_message(struct WText *message)
-{
-    // ... TODO implement
-    return 0;
-}
-
-static struct WText *render_message(struct WText *message)
-{
-    // ... TODO implement
-    return message;
-}
 
 /*************** EDITOR FUNCTIONS ******************/
 
