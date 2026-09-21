@@ -1,4 +1,5 @@
-/*************** MESSAGING FUNCTIONS ******************/
+#ifndef MESSAGE_H
+#define MESSAGE_H
 
 #include "wtext.h"
 
@@ -14,3 +15,5 @@ static struct WText *render_message(struct WText *message)
     // ... TODO implement
     return message;
 }
+
+#endif
