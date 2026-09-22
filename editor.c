@@ -18,7 +18,7 @@ struct WText text = {
 /*************** EDITOR FUNCTIONS ******************/
 
 // Draw the editor, and surrounding box
-static void draw_editor(WINDOW *win)
+void draw_editor(WINDOW *win)
 {
     int editorheight = getmaxy(win);
     //werase(win);
@@ -36,7 +36,7 @@ static void draw_editor(WINDOW *win)
 }
 
 // Insert into `text` a single wide character, at the text's cursor_y and cursor_x positions
-static void insert(wchar_t ch)
+void insert(wchar_t ch)
 {
     if (wcslen(text.text[cursor_y]) >= MAX_COLS - 1)
         return;
@@ -48,7 +48,7 @@ static void insert(wchar_t ch)
     cursor_x++;
 }
 
-static void new_line(void)
+void new_line(void)
 {
     if (text.line_count >= MAX_LINES)
         return;
@@ -79,7 +79,7 @@ static void new_line(void)
     cursor_x = 0;
 }
 
-static void backspace(void)
+void backspace(void)
 {
     if (cursor_x > 0) {
         size_t len = wcslen(text.text[cursor_y]);
@@ -115,7 +115,7 @@ static void backspace(void)
     beep(); // if at beginning of message and trying to press backspace, beep
 }
 
-static void delete_char(void)
+void delete_char(void)
 {
     size_t len = wcslen(text.text[cursor_y]);
 
@@ -146,7 +146,7 @@ static void delete_char(void)
     beep(); // if at end of message and trying to delete, beep
 }
 
-static void move_left(void)
+void move_left(void)
 {
     if (cursor_x > 0)
         cursor_x--;
@@ -157,7 +157,7 @@ static void move_left(void)
     }
 }
 
-static void move_right(void)
+void move_right(void)
 {
     int len = wcslen(text.text[cursor_y]);
 
@@ -169,7 +169,7 @@ static void move_right(void)
     }
 }
 
-static void move_up(void)
+void move_up(void)
 {
     if (cursor_y > 0) {
         cursor_y--;
@@ -181,7 +181,7 @@ static void move_up(void)
         cursor_x = 0;
 }
 
-static void move_down(void)
+void move_down(void)
 {
     if (cursor_y + 1 < (int) text.line_count) {
         cursor_y++;

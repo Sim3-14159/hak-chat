@@ -15,13 +15,6 @@
 #define CTRL(c) ((c) & 0x1F)
 #endif
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-#ifndef FALSE
-#define FALSE 0
-#endif
-
 int main(void)
 {
     setlocale(LC_ALL, ""); // enable UTF-8
