@@ -5,7 +5,7 @@ LDFLAGS := -lncursesw
 TARGET := hak-chat
 SOURCE := hacker_chatter.c
 
-.PHONY: all clean test-ncurses
+.PHONY: all clean
 
 all: $(TARGET)
 

@@ -7,7 +7,6 @@
 #include <stdlib.h>
 
 #include "editor.c"
-#include "wtext.h"
 
 // Control + <key> is actually an overlay of 0x1F on <key>
 // Control + 'x' becomes 'x' & Ox1F
@@ -17,6 +16,13 @@
 
 int main(void)
 {
+    struct WText *text = malloc(sizeof(struct WText));
+    *text = (struct WText) {
+        .arr = L"Testing",
+        .len = 7,
+        .next = NULL,
+    };
+
     setlocale(LC_ALL, ""); // enable UTF-8
 
     initscr();

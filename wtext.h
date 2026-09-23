@@ -2,13 +2,14 @@
 #define WTEXT_H
 
 #include <stdlib.h>
+#include <wchar.h>
 
-#define MAX_LINES 100
-#define MAX_COLS 1024
+#define MAX_LEN 1024
 
 struct WText {
-    size_t len;
-    wchar_t text[MAX_LINES][MAX_COLS];
-    size_t line_count;
+    size_t len; // same as wcslen(arr), only used because wcslen is inneficient and this is faster
+    wchar_t *arr;
+    struct WText *next;
 };
+
 #endif

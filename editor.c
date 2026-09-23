@@ -7,18 +7,13 @@
 #include <wchar.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "wtext.h"
+#include "wtext.c"
 
 static int cursor_y = 0;
 static int cursor_x = 0;
 
-struct WText text = {
-    .len = (size_t) MAX_COLS * MAX_LINES, .text = {L"Type something here."}, .line_count = 1};
-
-/*************** EDITOR FUNCTIONS ******************/
-
 // Draw the editor, and surrounding box
-void draw_editor(WINDOW *win)
+void draw_editor(WINDOW *win, struct Wtext *text)
 {
     int editorheight = getmaxy(win);
     //werase(win);
@@ -36,7 +31,7 @@ void draw_editor(WINDOW *win)
 }
 
 // Insert into `text` a single wide character, at the text's cursor_y and cursor_x positions
-void insert(wchar_t ch)
+void insert(wchar_t ch, struct Wtext *text)
 {
     if (wcslen(text.text[cursor_y]) >= MAX_COLS - 1)
         return;
@@ -48,7 +43,7 @@ void insert(wchar_t ch)
     cursor_x++;
 }
 
-void new_line(void)
+void new_line(struct Wtext *text)
 {
     if (text.line_count >= MAX_LINES)
         return;
