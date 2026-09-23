@@ -1,3 +1,4 @@
+#include "wtext.h"
 #define _XOPEN_SOURCE_EXTENDED
 
 #include <locale.h>
@@ -17,11 +18,8 @@
 int main(void)
 {
     struct WText *text = malloc(sizeof(struct WText));
-    *text = (struct WText) {
-        .arr = L"Testing",
-        .len = 7,
-        .next = NULL,
-    };
+    struct WLine *line = malloc(sizeof(struct WLine));
+    wl_set(line, L"Type anything...");
 
     setlocale(LC_ALL, ""); // enable UTF-8
 
@@ -35,8 +33,8 @@ int main(void)
     if (LINES < 10 || COLS < 30) {
         endwin();
 
-        fprintf(stderr, "Terminal is too small.\n");
-        fprintf(stderr, "Please resize it to at least 30x10.\n");
+        perror("Terminal is too small.\n");
+        perror("Please resize it to at least 30x10.\n");
 
         return 1;
     }
@@ -44,7 +42,7 @@ int main(void)
     int height = LINES - 4;
     int width = COLS - 4;
 
-    WINDOW *editor = newwin(text.line_count + 2, width + 1, height - (text.line_count - 2), 1);
+    WINDOW *editor = newwin(text->line_count + 2, width + 1, height - (text->line_count - 2), 1);
     WINDOW *messages = newwin((int) (height * 2 / 3 - 2), width + 1, 1, 1);
 
     if (editor == NULL) {
@@ -68,10 +66,10 @@ int main(void)
         // TODO: fix ordering of this so cursor doesn't flash and move to other places
         werase(editor);
         wrefresh(editor);
-        mvwin(editor, height - (text.line_count - 2), 1);
-        wresize(editor, text.line_count + 2, width + 1);
+        mvwin(editor, height - (text->line_count - 2), 1);
+        wresize(editor, text->line_count + 2, width + 1);
 
-        draw_editor(editor);
+        draw_editor(editor, text);
         //box(messages, 0, 0);
 
         wint_t ch;
@@ -81,11 +79,11 @@ int main(void)
             case OK: // Normal character
                 if (ch == L'\n' ||
                     ch == L'\r') // newline (can be OK , L'\n' or KEY_CODE_YES , KEY_ENTER)
-                    new_line();
+                    new_line(text);
                 else if (ch == 127) // backspace (can be OK - 127 or KEY_CODE_YES - KEY_BACKSPACE)
-                    backspace();
+                    backspace(text);
                 else if (ch >= L' ') // Printable Unicode character.
-                    insert(ch);
+                    insert(ch, text);
                 else if (ch == CTRL('x')) // quit
                     running = FALSE;
 
@@ -94,31 +92,31 @@ int main(void)
             case KEY_CODE_YES: // Special key
                 switch (ch) {
                     case KEY_LEFT:
-                        move_left();
+                        move_left(text);
                         break;
 
                     case KEY_RIGHT:
-                        move_right();
+                        move_right(text);
                         break;
 
                     case KEY_UP:
-                        move_up();
+                        move_up(text);
                         break;
 
                     case KEY_DOWN:
-                        move_down();
+                        move_down(text);
                         break;
 
                     case KEY_BACKSPACE:
-                        backspace();
+                        backspace(text);
                         break;
 
                     case KEY_DC:
-                        delete_char();
+                        delete_char(text);
                         break;
 
                     case KEY_ENTER:
-                        new_line();
+                        new_line(text);
                         break;
 
                     case KEY_RESIZE:

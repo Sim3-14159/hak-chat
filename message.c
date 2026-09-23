@@ -9,19 +9,22 @@
 
 #include <time.h>
 
-#include "wtext.h"
+#include "wtext.c"
+#include "message.h"
 
-// 0: success, nonzero: failure
-int send_message(struct WText *message)
+// 0: success, 1: failure
+int send_message(struct Message *message)
 {
     // ... TODO implement
     return 0;
 }
 
-struct WText *render_message(struct WText *message)
+struct WText *render_message(struct Message *message, size_t screen_width)
 {
-    // ... TODO implement
-    return message;
+    struct WText *rendered = malloc(sizeof(struct WText));
+    char time_str[20];
+    strftime(time_str, 20, /* ISO standard time format */ "%Y-%m-%dT%H:%M:%S", message->timesent);
+    return rendered;
 }
 
 /**
