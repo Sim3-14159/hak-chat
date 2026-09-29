@@ -1,6 +1,7 @@
 #ifndef WTEXT_H
 #define WTEXT_H
 
+#include <ncursesw/ncurses.h>
 #include <stdlib.h>
 #include <wchar.h>
 
@@ -22,5 +23,8 @@ struct WText {
     struct WLine *line;
     struct WText *next;
 };
+
+typedef struct WText WText;
+typedef struct WLine WLine;
 
 #endif

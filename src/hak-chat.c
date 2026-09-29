@@ -17,8 +17,8 @@
 
 int main(void)
 {
-    struct WText *text = malloc(sizeof(struct WText));
-    struct WLine *line = malloc(sizeof(struct WLine));
+    WText *text = malloc(sizeof(WText));
+    WLine *line = malloc(sizeof(WLine));
     wl_set(line, L"Type anything...");
 
     setlocale(LC_ALL, ""); // enable UTF-8

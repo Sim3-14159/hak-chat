@@ -13,7 +13,7 @@ static int cursor_y = 0;
 static int cursor_x = 0;
 
 // Draw the editor, and surrounding box
-void draw_editor(WINDOW *win, struct WText *text)
+void draw_editor(WINDOW *win, WText *text)
 {
     int editorheight = getmaxy(win);
     //werase(win);
@@ -31,7 +31,7 @@ void draw_editor(WINDOW *win, struct WText *text)
 }
 
 // Insert into `text` a single wide character, at the text's cursor_y and cursor_x positions
-void insert(wchar_t ch, struct WText *text)
+void insert(wchar_t ch, WText *text)
 {
     if (wcslen(text->arr[cursor_y]) >= MAX_COLS - 1)
         return;
@@ -43,7 +43,7 @@ void insert(wchar_t ch, struct WText *text)
     cursor_x++;
 }
 
-void new_line(struct WText *text)
+void new_line(WText *text)
 {
     if (text->line_count >= MAX_LINES)
         return;
@@ -74,7 +74,7 @@ void new_line(struct WText *text)
     cursor_x = 0;
 }
 
-void backspace(struct WText *text)
+void backspace(WText *text)
 {
     if (cursor_x > 0) {
         size_t len = wcslen(text->arr[cursor_y]);
@@ -110,7 +110,7 @@ void backspace(struct WText *text)
     beep(); // if at beginning of message and trying to press backspace, beep
 }
 
-void delete_char(struct WText *text)
+void delete_char(WText *text)
 {
     size_t len = wcslen(text->arr[cursor_y]);
 
@@ -141,7 +141,7 @@ void delete_char(struct WText *text)
     beep(); // if at end of message and trying to delete, beep
 }
 
-void move_left(struct WText *text)
+void move_left(WText *text)
 {
     if (cursor_x > 0)
         cursor_x--;
@@ -152,7 +152,7 @@ void move_left(struct WText *text)
     }
 }
 
-void move_right(struct WText *text)
+void move_right(WText *text)
 {
     int len = wcslen(text->arr[cursor_y]);
 
@@ -164,7 +164,7 @@ void move_right(struct WText *text)
     }
 }
 
-void move_up(struct WText *text)
+void move_up(WText *text)
 {
     if (cursor_y > 0) {
         cursor_y--;
@@ -176,7 +176,7 @@ void move_up(struct WText *text)
         cursor_x = 0;
 }
 
-void move_down(struct WText *text)
+void move_down(WText *text)
 {
     if (cursor_y + 1 < (int) text->line_count) {
         cursor_y++;

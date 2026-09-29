@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include "wtext.h"
 
-void wl_delete(struct WLine *line);
-int wl_setChar(struct WLine *line, int index, wchar_t chr);
+void wl_delete(WLine *line);
+int wl_setChar(WLine *line, int index, wchar_t chr);
 
 /******************************* WText functions **************************************/
 
@@ -13,15 +13,15 @@ int wl_setChar(struct WLine *line, int index, wchar_t chr);
   * Automatically allocates memeory for itself when it needs it.
   * returns 0 on success and 1 on error.
   */
-int wt_addChar(struct WText *text, wchar_t chr)
+int wt_addChar(WText *text, wchar_t chr)
 {
     // TODO: fix
-    struct WText *current = text;
+    WText *current = text;
     while (current->next)
         current = current->next;
 
     if (current->line_count == MAX_LEN - 1) {
-        current->next = malloc(sizeof(struct WText));
+        current->next = malloc(sizeof(WText));
         if (!current->next)
             return 1;
         current->next->line_count = 1;
@@ -39,15 +39,15 @@ int wt_addChar(struct WText *text, wchar_t chr)
 /**
 * Get the line number `lineNo`, of `text`. (0 indexed)
 */
-struct WLine *wt_getLine(struct WText *text, int lineNo)
+WLine *wt_getLine(WText *text, int lineNo)
 {
-    // struct WText *current = text;
+    // WText *current = text;
     // for (int currentLineNo = 0; currentLineNo < lineNo;) {
     //     current = current->next;
     // }
     // return current;
-    struct WLine *current = text->line;
-    struct WLine *last = text->line;
+    WLine *current = text->line;
+    WLine *last = text->line;
     for (int currentLineNo = 0; currentLineNo < lineNo; currentLineNo++) {
         while (current->next) // until we reach the end of the line (loop through linked list)
             current = current->next;
@@ -58,10 +58,10 @@ struct WLine *wt_getLine(struct WText *text, int lineNo)
     return current;
 }
 
-void wt_delete(struct WText *text)
+void wt_delete(WText *text)
 {
-    struct WText *current = text;
-    struct WText *next = text->next;
+    WText *current = text;
+    WText *next = text->next;
     while (next) {
         wl_delete(current->line);
         free(current);
@@ -72,7 +72,7 @@ void wt_delete(struct WText *text)
 
 /*************** WLine functions ********************/
 
-void wl_setTo(struct WLine *line, const wchar_t *content, size_t content_size)
+void wl_setTo(WLine *line, const wchar_t *content, size_t content_size)
 {
     int written_chars = 0;
     while (written_chars < content_size) {
@@ -86,14 +86,14 @@ void wl_setTo(struct WLine *line, const wchar_t *content, size_t content_size)
     }
 }
 
-void wl_addChar(struct WLine *line, wchar_t chr)
+void wl_addChar(WLine *line, wchar_t chr)
 {
 }
 
-void wl_delete(struct WLine *line)
+void wl_delete(WLine *line)
 {
-    struct WLine *current = line;
-    struct WLine *next = line->next;
+    WLine *current = line;
+    WLine *next = line->next;
     while (next) {
         free(current);
         current = next;
@@ -102,9 +102,9 @@ void wl_delete(struct WLine *line)
 }
 
 // 1 on error, 0 on OK
-int wl_setChar(struct WLine *line, int index, wchar_t chr)
+int wl_setChar(WLine *line, int index, wchar_t chr)
 {
-    struct WLine *current = line;
+    WLine *current = line;
     while (index >= MAX_LEN) {
         current = current->next;
         if (!current)

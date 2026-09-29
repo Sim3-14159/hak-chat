@@ -19,9 +19,9 @@ int send_message(struct Message *message)
     return 0;
 }
 
-struct WText *render_message(struct Message *message, size_t screen_width)
+WText *render_message(struct Message *message, size_t screen_width)
 {
-    struct WText *rendered = malloc(sizeof(struct WText));
+    WText *rendered = malloc(sizeof(WText));
     char time_str[20];
     strftime(time_str, 20, /* ISO standard time format */ "%Y-%m-%dT%H:%M:%S", message->timesent);
     return rendered;
