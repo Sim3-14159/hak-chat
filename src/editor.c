@@ -1,12 +1,14 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+#include "wtext.h"
 #define _XOPEN_SOURCE_EXTENDED
 
 #include <ncursesw/ncurses.h>
 #include <wchar.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "wtext.c"
 
 static int cursor_y = 0;
@@ -21,8 +23,12 @@ void draw_editor(WINDOW *win, WText *text)
     box(win, 0, 0); // border
 
     // Text starts at row 1, column 1 because row 0 & column 0 are used by the border.
-    for (int y = 0; y < (int) text->line_count && y < editorheight - 2; y++)
-        mvwaddwstr(win, y + 1, 1, text->arr[y]);
+    for (int y = 0; y < (int) text->line_count && y < editorheight - 2; y++) {
+        mvwaddwstr(win, y + 1, 1,
+                   wl_getChar(wt_getLine(text, y),
+                              0)); // 0 IS A TEST TODO: make sure that this works actually
+        //mvwaddwstr(win, y + 1, 1, text->arr[y]);
+    }
 
     // Put cursor inside the border.
     wmove(win, cursor_y + 1, cursor_x + 1);
@@ -30,27 +36,34 @@ void draw_editor(WINDOW *win, WText *text)
     //wrefresh(win);
 }
 
-// Insert into `text` a single wide character, at the text's cursor_y and cursor_x positions
-void insert(wchar_t ch, WText *text)
+// Insert into `text` a single wide character, at line row, coloumn col positions
+void insert(wchar_t ch, WText *text, int row, int col)
 {
-    if (wcslen(text->arr[cursor_y]) >= MAX_COLS - 1)
-        return;
+    // if (wl_getLineLength(wt_getLine(text, row)) >= MAX_COLS - 1)
+    //     return;
 
-    for (size_t i = wcslen(text->arr[cursor_y]) + 1; i > (size_t) cursor_x; i--)
-        text->arr[cursor_y][i] = text->arr[cursor_y][i - 1];
+    for (size_t i = wl_getLineLength(wt_getLine(text, row)) + 1; i > (size_t) row; i--) {
+        WLine *textline = wt_getLine(text, row);
+        wl_setChar(textline, i, wl_getChar(textline, i - 1));
+        //text->arr[row][i] = text->arr[row][i - 1];
+    }
 
-    text->arr[cursor_y][cursor_x] = ch;
-    cursor_x++;
+    wl_setChar(wt_getLine(text, row), col, ch);
+    //text->arr[row][col] = ch;
+    cursor_x++; // TODO: find proper placement for what do do with this
 }
 
 void new_line(WText *text)
 {
-    if (text->line_count >= MAX_LINES)
-        return;
-
     // Move existing lines down.
-    for (int i = text->line_count; i > cursor_y + 1; i--)
-        wcscpy(text->arr[i], text->arr[i - 1]);
+    for (int i = text->line_count; i > cursor_y + 1; i--) {
+        WLine *line = wt_getLine(text, i - 1);
+        wcscpy(wl_toWCharArray(line), wl_toWCharArray(line->next));
+    }
+
+    //for (int i = text->line_count; i > cursor_y + 1; i--) {
+    //    wcscpy(text->arr[i], text->arr[i - 1]);
+    //}
 
     /*
      * Move text after cursor to the new line.
@@ -64,9 +77,12 @@ void new_line(WText *text)
      * Hello
      * | World
      */
-    wcscpy(text->arr[cursor_y + 1], text->arr[cursor_y] + cursor_x);
+    WLine *line = wt_getLine(text, cursor_y);
+    wcscpy(wl_toWCharArray(line->next), wl_toWCharArray(line) + cursor_x);
+    //wcscpy(text->arr[cursor_y + 1], text->arr[cursor_y] + cursor_x);
 
-    text->arr[cursor_y][cursor_x] = L'\0';
+    wl_setChar(wt_getLine(text, cursor_y), cursor_x, L'\0');
+    //text->arr[cursor_y][cursor_x] = L'\0';
 
     text->line_count++;
 
@@ -76,14 +92,17 @@ void new_line(WText *text)
 
 void backspace(WText *text)
 {
+    WLine *line_at_cursor_y = wt_getLine(text, cursor_y);
     if (cursor_x > 0) {
-        size_t len = wcslen(text->arr[cursor_y]);
+        size_t len = wl_getLineLength(line_at_cursor_y);
+        //size_t len = wcslen(text->arr[cursor_y]);
 
-        for (size_t i = cursor_x; i <= len; i++)
-            text->arr[cursor_y][i - 1] = text->arr[cursor_y][i];
+        for (size_t i = cursor_x; i <= len; i++) {
+            wl_setChar(line_at_cursor_y, i - 1, wl_getChar(line_at_cursor_y, i));
+            // line_at_cursor_y[i - 1] = line_at_cursor_y[i];
+        }
 
         cursor_x--;
-
         return;
     }
 
@@ -91,8 +110,8 @@ void backspace(WText *text)
         size_t previous_len = wcslen(text->arr[cursor_y - 1]);
         size_t current_len = wcslen(text->arr[cursor_y]);
 
-        if (previous_len + current_len >= MAX_COLS)
-            return;
+        //if (previous_len + current_len >= MAX_COLS)
+        //    return;
 
         wcscat(text->arr[cursor_y - 1], text->arr[cursor_y]);
 

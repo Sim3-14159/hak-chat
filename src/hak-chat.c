@@ -83,7 +83,7 @@ int main(void)
                 else if (ch == 127) // backspace (can be OK - 127 or KEY_CODE_YES - KEY_BACKSPACE)
                     backspace(text);
                 else if (ch >= L' ') // Printable Unicode character.
-                    insert(ch, text);
+                    insert(ch, text, cursor_y, cursor_x);
                 else if (ch == CTRL('x')) // quit
                     running = FALSE;
 

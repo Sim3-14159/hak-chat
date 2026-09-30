@@ -4,6 +4,7 @@
 #include "wtext.h"
 
 void wl_delete(WLine *line);
+bool wl_isEndPart(WLine *line);
 int wl_setChar(WLine *line, int index, wchar_t chr);
 
 /******************************* WText functions **************************************/
@@ -72,6 +73,25 @@ void wt_delete(WText *text)
 
 /*************** WLine functions ********************/
 
+size_t wl_getLineLength(WLine *line)
+{
+    size_t total = 0;
+    WLine *current = line;
+    while (!wl_isEndPart(current)) {
+        total += wcslen(current->arr);
+        current = current->next;
+    }
+    return total;
+}
+
+/**
+  * See if `line` is the last line in its linked list.
+  */
+bool wl_isEndPart(WLine *line)
+{
+    return line->next == NULL;
+}
+
 void wl_setTo(WLine *line, const wchar_t *content, size_t content_size)
 {
     int written_chars = 0;
@@ -115,4 +135,19 @@ int wl_setChar(WLine *line, int index, wchar_t chr)
         return 1; // string not logn enough to get index
     current->arr[index] = chr;
     return 0;
+}
+
+// NULL on error
+wchar_t wl_getChar(WLine *line, int index)
+{
+    WLine *current = line;
+    while (index >= MAX_LEN) {
+        current = current->next;
+        if (!current)
+            return NULL; // not enough links to get index
+        index -= MAX_LEN - 1; // account for NULL terminator
+    }
+    if (index >= current->len)
+        return NULL; // string not logn enough to get index
+    return current->arr[index];
 }
