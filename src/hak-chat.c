@@ -1,5 +1,6 @@
-#include "wtext.h"
 #define _XOPEN_SOURCE_EXTENDED
+// allow wide char stuff
+#include "wstring.h"
 
 #include <locale.h>
 #include <ncursesw/ncurses.h>
@@ -7,137 +8,113 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "editor.c"
-
-// Control + <key> is actually an overlay of 0x1F on <key>
-// Control + 'x' becomes 'x' & Ox1F
-#ifndef CTRL
 #define CTRL(c) ((c) & 0x1F)
-#endif
 
-int main(void)
+int main()
 {
-    WText *text = malloc(sizeof(WText));
-    WLine *line = malloc(sizeof(WLine));
-    wchar_t initial_content[] = L"Type anything...";
-    wl_setTo(line, initial_content, wcslen(initial_content));
+    typedef struct WString *ws;
 
     setlocale(LC_ALL, ""); // enable UTF-8
-
     initscr();
-
     noecho();
     cbreak(); // no buffering
     keypad(stdscr, TRUE); // enable arrow and f keys
     curs_set(TRUE); // Show terminal cursor.
 
+    ws message = ws_new(L"Type something...\n");
+
+    WINDOW *editor = newwin(2, LINES, COLS, 1);
+
     if (LINES < 10 || COLS < 30) {
         endwin();
-
-        perror("Terminal is too small.\n");
-        perror("Please resize it to at least 30x10.\n");
-
+        fprintf(stderr, "Terminal is too small.\nPlease resize it to at least 30x10.\n");
         return 1;
     }
-
-    int height = LINES - 4;
-    int width = COLS - 4;
-
-    WINDOW *editor = newwin(text->line_count + 2, width + 1, height - (text->line_count - 2), 1);
-    WINDOW *messages = newwin((int) (height * 2 / 3 - 2), width + 1, 1, 1);
-
-    if (editor == NULL) {
-        endwin();
-        fprintf(stderr, "Failed to create editor window.\n");
-        return 1;
-    }
-    if (messages == NULL) {
-        endwin();
-        fprintf(stderr, "Failed to create messages window.\n");
-        return 1;
-    }
-
-    keypad(editor, TRUE); // enable arrow and f keys
-
-    cursor_y = 0;
-    cursor_x = 0;
-    int running = TRUE;
-
+    // MAIN EVENT LOOP
+    wint_t ch;
+    addwstr(ws_cstr(message));
+    wrefresh(stdscr);
+    bool running = true;
     while (running) {
-        // TODO: fix ordering of this so cursor doesn't flash and move to other places
-        werase(editor);
-        wrefresh(editor);
-        mvwin(editor, height - (text->line_count - 2), 1);
-        wresize(editor, text->line_count + 2, width + 1);
-
-        draw_editor(editor, text);
-        //box(messages, 0, 0);
-
-        wint_t ch;
-        int result = wget_wch(editor, &ch);
+        int result = wget_wch(stdscr, &ch);
+        wchar_t wstr[2] = {(wchar_t) ch, L'\0'};
 
         switch (result) {
             case OK: // Normal character
-                if (ch == L'\n' ||
-                    ch == L'\r') // newline (can be OK , L'\n' or KEY_CODE_YES , KEY_ENTER)
-                    new_line(text);
-                else if (ch == 127) // backspace (can be OK - 127 or KEY_CODE_YES - KEY_BACKSPACE)
-                    backspace(text);
-                else if (ch >= L' ') // Printable Unicode character.
-                    insert(ch, text, cursor_y, cursor_x);
-                else if (ch == CTRL('x')) // quit
-                    running = FALSE;
+                waddnwstr(stdscr, wstr, 1);
+
+                // newline (can be OK , L'\n' or KEY_CODE_YES , KEY_ENTER)
+                if (ch == L'\n' || ch == L'\r') {
+                    // new_line(text);
+                    // TODO: add proper functoins to make this work
+                    ws_
+                } // backspace (can be OK - 127 or KEY_CODE_YES - KEY_BACKSPACE)
+                else if (ch == 127) {
+                    ws_pop(message);
+                } // Printable Unicode character.
+                else if (ch >= L' ') {
+                    WString *tmp = ws_new((wchar_t[]) {ch, L'\0'});
+                    ws_concat(message, tmp);
+                    ws_free(tmp);
+                } // quit
+                else if (ch == CTRL('x'))
+                    running = false;
 
                 break;
 
             case KEY_CODE_YES: // Special key
                 switch (ch) {
                     case KEY_LEFT:
-                        move_left(text);
+                        // move_left(text);
                         break;
 
                     case KEY_RIGHT:
-                        move_right(text);
+                        // move_right(text);
                         break;
 
                     case KEY_UP:
-                        move_up(text);
+                        // move_up(text);
                         break;
 
                     case KEY_DOWN:
-                        move_down(text);
+                        // move_down(text);
                         break;
 
                     case KEY_BACKSPACE:
-                        backspace(text);
+                        // backspace(text);
+                        ws_pop(message);
                         break;
 
                     case KEY_DC:
-                        delete_char(text);
+                        // delete_char(text);
                         break;
 
                     case KEY_ENTER:
-                        new_line(text);
+                        // new_line(text);
                         break;
 
                     case KEY_RESIZE:
-                        getmaxyx(stdscr, height, width);
-                        // TODO: get rid of dependency on -4
-                        // (right now there are a lot of hardcoded numbers)
-                        height -= 4;
-                        width -= 4;
+                        // getmaxyx(stdscr, height, width);
+                        // // TODO: get rid of dependency on -4
+                        // // (right now there are a lot of hardcoded numbers)
+                        // height -= 4;
+                        // width -= 4;
                         break;
                 }
+
                 break;
         }
+
+        wrefresh(editor);
     }
 
-    delwin(editor);
-    delwin(messages);
+    // END
     endwin();
 
     fprintf(stdout, "[Exit]\n");
     fflush(stdout);
+
+    ws_free(message);
 
     return 0;
 }
