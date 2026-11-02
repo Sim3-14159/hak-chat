@@ -93,6 +93,7 @@ void new_line(WText *text)
 void backspace(WText *text)
 {
     WLine *line_at_cursor_y = wt_getLine(text, cursor_y);
+    WLine *line_at_cursor_y_minus_one = wt_getLine(text, cursor_y - 1);
     if (cursor_x > 0) {
         size_t len = wl_getLineLength(line_at_cursor_y);
         //size_t len = wcslen(text->arr[cursor_y]);
@@ -107,8 +108,11 @@ void backspace(WText *text)
     }
 
     if (cursor_y > 0) { // at beginning of line
-        size_t previous_len = wcslen(text->arr[cursor_y - 1]);
-        size_t current_len = wcslen(text->arr[cursor_y]);
+        size_t previous_len = wl_getLineLength(line_at_cursor_y_minus_one);
+        //size_t current_len = wl_getLineLength(line_at_cursor_y); // not needed probably
+
+        //size_t previous_len = wcslen(text->arr[cursor_y - 1]);
+        //size_t current_len = wcslen(text->arr[cursor_y]);
 
         //if (previous_len + current_len >= MAX_COLS)
         //    return;

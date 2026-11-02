@@ -73,6 +73,7 @@ void wt_delete(WText *text)
 
 /*************** WLine functions ********************/
 
+// Like strlen
 size_t wl_getLineLength(WLine *line)
 {
     size_t total = 0;
@@ -92,6 +93,7 @@ bool wl_isEndPart(WLine *line)
     return line->next == NULL;
 }
 
+// Set a WLine to have `content` content
 void wl_setTo(WLine *line, const wchar_t *content, size_t content_size)
 {
     int written_chars = 0;
@@ -108,8 +110,10 @@ void wl_setTo(WLine *line, const wchar_t *content, size_t content_size)
 
 void wl_addChar(WLine *line, wchar_t chr)
 {
+    // TODO: implement
 }
 
+/* Delete a WLine */
 void wl_delete(WLine *line)
 {
     WLine *current = line;
@@ -150,4 +154,16 @@ wchar_t wl_getChar(WLine *line, int index)
     if (index >= current->len)
         return NULL; // string not logn enough to get index
     return current->arr[index];
+}
+
+/**
+ * Set `text` to have the content `content`
+ */
+Err wt_setTo(WText *text, wchar_t *content)
+{
+    size_t i = 0;
+    while (content[i]) {
+        wt_addChar(text, content[i]);
+    }
+    return succ;
 }

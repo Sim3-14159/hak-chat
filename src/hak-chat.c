@@ -19,7 +19,8 @@ int main(void)
 {
     WText *text = malloc(sizeof(WText));
     WLine *line = malloc(sizeof(WLine));
-    wl_set(line, L"Type anything...");
+    wchar_t initial_content[] = L"Type anything...";
+    wl_setTo(line, initial_content, wcslen(initial_content));
 
     setlocale(LC_ALL, ""); // enable UTF-8
 

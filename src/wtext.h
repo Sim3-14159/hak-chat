@@ -7,6 +7,8 @@
 
 #define MAX_LEN 1024
 
+typedef enum { succ, fail } Err;
+
 struct WLine {
     size_t len; // same as wcslen(arr), only used because wcslen is inneficient and this is faster
     wchar_t *arr; // must be less than MAX_LEN
