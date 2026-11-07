@@ -7,12 +7,14 @@ typedef enum {
   HAK_WRITER_EMPTY,
   HAK_WRITER_MESSAGE,
   HAK_WRITER_COMMAND
-} hakWriterKind;
+} 
+hakWriterKind;
 
 typedef struct {
   hakWriterKind kind;
   const wchar_t *reply;
-} hakWriterResult;
+} 
+hakWriterResult;
 
 // takes ws_cstr(message), NULL or just whitespace counts as empty
 // doesnt change the input. reply is fixed text (or NULL), dont free it

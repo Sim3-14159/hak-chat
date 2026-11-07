@@ -40,7 +40,8 @@ hakWriterResult hak_writer_handle(const wchar_t *line) {
     if (end - start == 3 && line[start + 1] == L'4' &&
         line[start + 2] == L'2') {
       result.reply = L"42: the answer to life, the universe, and everything.";
-    } else {
+    } 
+    else {
       result.reply = L"Unknown command.";
     }
     return result;
