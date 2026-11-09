@@ -53,7 +53,7 @@ int main()
                 else if (ch >= L' ') {
                     ws_add(message, ch);
                 } // quit
-                else if (ch == CTRL('x'))
+                else if (ch == CTRL(L'x') || ch == CTRL(L'q'))
                     running = false;
 
                 break;
@@ -101,7 +101,7 @@ int main()
                 break;
         }
 
-        clear();
+        erase();
         addnwstr(message->data, message->count);
         wrefresh(editor);
     }
