@@ -1,68 +1,87 @@
-#ifndef WSTRING_H
-#define WSTRING_H
+#ifndef DYNAMIC_ARRAY_H
+#define DYNAMIC_ARRAY_H
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <ncursesw/ncurses.h>
 
+struct WString {
+    wchar_t *data;
+    size_t count;
+    size_t capacity;
+};
+
+/* An ordered array of wchar_ts that grows as you add to it. */
 typedef struct WString WString;
-typedef struct WS_Stats WS_Stats;
+typedef struct WString *ws; // ptr
 
-/* Get a word wrapped WW_WString that fits the window */
-WS_Stats *ws_fit_window(WString *wstring, WINDOW *win);
+/* ---- Making and freeing ---- */
 
-/* A new WString holding a copy of text. NULL if text is NULL or memory runs out. */
-WString *ws_new(const wchar_t *text);
+/* A new, empty WString. NULL if memory runs out.
+   Whoever gets one must pass it to ws_free exactly once. */
+WString *ws_new(void);
 
-/* A new WString with the same bytes as s, in memory of its own.
-   NULL if s is NULL or memory runs out. */
-WString *ws_copy(const WString *s);
+/* Frees a and everything it holds. Does nothing if a is NULL. */
+void ws_free(WString *a);
 
-/* A new WString: a's bytes followed by b's. NULL if either is NULL or memory runs out. */
-WString *ws_concat(const WString *a, const WString *b);
+/* ---- Size ---- */
 
-/* A new WString holding len bytes of s, starting at index start.
-   NULL if s is NULL, if the range does not fit inside s, or if memory runs out.
-   An empty range that fits, such as start == ws_length(s) with len 0, gives "". */
-WString *ws_substring(const WString *s, size_t start, size_t len);
+/* The number of wchar_ts in a. 0 if a is NULL. */
+size_t ws_count(const WString *a);
 
-/* A new WString with every 'a'..'z' changed to 'A'..'Z' and every other byte kept.
-   s itself is unchanged. NULL if s is NULL or memory runs out. */
-WString *ws_to_upper(const WString *s);
+/* A hint that a will soon hold at least n wchar_ts, so it can make room now. Returns true
+   if a can now hold n wchar_ts without allocating again. Returns false, and leaves a
+   unchanged, if a is NULL or memory runs out. */
+bool ws_reserve(WString *a, size_t n);
 
-/* Frees s and its bytes. Does nothing if s is NULL. */
-void ws_free(WString *s);
+/* ---- Adding ---- */
 
-/* ---- Reading ---- */
+/* Adds value to the end of a and returns true. Returns false, and leaves a unchanged,
+   if a is NULL or memory runs out. */
+bool ws_add(WString *a, wchar_t value);
 
-/* The number of bytes in s, not counting the terminator. 0 if s is NULL. */
-size_t ws_length(const WString *s);
+/* Inserts value at index i, shifting the wchar_ts at i and after up one index, and returns
+   true. i may equal ws_count(a), which adds to the end. Returns false, and leaves a
+   unchanged, if a is NULL, i > ws_count(a), or memory runs out. */
+bool ws_insert(WString *a, size_t i, wchar_t value);
 
-/* Stores s's byte at index i in *out and returns true. Returns false, and leaves *out
-   alone, if s or out is NULL or i is not less than ws_length(s). */
-bool ws_at(const WString *s, size_t i, wchar_t *out);
+/* ---- Reading and writing ---- */
 
-/* s's bytes as a C string, for printf("%s"). Do not write through it or free it; it stays
-   valid until s is freed. "" if s is NULL. */
-const wchar_t *ws_cstr(const WString *s);
+/* Stores the wchar_t at index i in *out and returns true. Returns false, and leaves *out
+   alone, if a or out is NULL or i is not less than ws_count(a). */
+bool ws_get(const WString *a, size_t i, wchar_t *out);
 
-/* ---- Comparing and searching ---- */
+/* Replaces the wchar_t at index i with value and returns true. Returns false, and leaves a
+   unchanged, if a is NULL or i is not less than ws_count(a). */
+bool ws_set(WString *a, size_t i, wchar_t value);
 
-/* true if a and b hold the same bytes. Two NULLs are equal; NULL and a WString are not. */
-bool ws_equals(const WString *a, const WString *b);
+/* Copies a's wchar_ts, in order, into dest[0 .. ws_count(a) - 1] and returns true.
+   Returns false, and writes nothing, if a or dest is NULL or dest_len < ws_count(a). */
+bool ws_copy_to(const WString *a, wchar_t *dest, size_t dest_len);
 
-/* Negative, zero or positive as a sorts before, equal to, or after b, comparing bytes as
-   wchar_t, like strcmp. A WString sorts after every WString it begins with ("Dun"
-   before "Dune"). NULL sorts before any WString, and two NULLs compare equal. */
-int ws_compare(const WString *a, const WString *b);
+/* ---- Searching ---- */
 
-/* true if s begins with prefix. Every WString begins with "". false if either is NULL. */
-bool ws_starts_with(const WString *s, const WString *prefix);
+/* Finds the first index holding value: stores it in *index and returns true. Returns
+   false, and leaves *index alone, if value does not occur or a or index is NULL. */
+bool ws_index_of(const WString *a, wchar_t value, size_t *index);
 
-/* Finds the first place needle occurs in haystack: stores its index in *index and returns
+/* true if value occurs in a. false if a is NULL. */
+bool ws_contains(const WString *a, wchar_t value);
 
-   is NULL. An empty needle is found at index 0. */
-bool ws_find(const WString *haystack, const WString *needle, size_t *index);
+/* ---- Removing ----
+
+   Removing never needs new memory, so these cannot fail for lack of it. */
+
+/* Removes the wchar_t at index i, shifting later wchar_ts down one index, and returns true.
+   If out is not NULL, stores the removed wchar_t in *out first. Returns false, and leaves
+   a and *out unchanged, if a is NULL or i is not less than ws_count(a). */
+bool ws_remove_at(WString *a, size_t i, wchar_t *out);
+
+/* Removes the first occurrence of value from a, shifting later wchar_ts down one index,
+   and returns true. Returns false if value does not occur or a is NULL. */
+bool ws_remove(WString *a, wchar_t value);
+
+/* Removes every wchar_t from a, so its count is 0. Does nothing if a is NULL. */
+void ws_clear(WString *a);
 
 /* ---- Your additions ----
 
@@ -70,26 +89,17 @@ bool ws_find(const WString *haystack, const WString *needle, size_t *index);
    the ones above: what it returns, what it does with NULL, and who owns the result.
    Do not change anything above this line. */
 
-/* A new WString with every 'A'..'Z' changed to 'a'..'z' and every other byte kept.
-   s itself is unchanged. NULL if s is NULL or memory runs out. */
-WString *ws_to_lower(const WString *s);
+/* Removes the last wchar_t from a and returns it. Returns 0, and leaves a unchanged, if a is
+ NULL or empty. */
+wchar_t ws_pop(ws a);
 
-/* a new WString without the whitespace at either end; NULL on failure of malloc or if s == NULL */
-//WString *ws_trim(const WString *s);
+/* Reverses the order of the wchar_ts in a and returns true. Returns false, and leaves a
+ unchanged, if a is NULL or memory runs out. */
+bool ws_reverse(ws a);
 
-/*  Negative, zero or positive as a sorts before, equal to, or after b, comparing bytes as
-   wchar_t, like strcmp. A WString sorts after every WString it begins with ("Dun"
-   before "Dune"). NULL sorts before any WString, and two NULLs compare equal. Case
-   is entirely ignored, so "a" also sorts equal to "A". /
-   */
-int ws_compare_ignore_case(const WString *a, const WString *b);
-
-/* reverses a string `s`, returns NULL if s == NULL */
-WString *ws_reverse(const WString *s);
-
-/* pop from end of a. return NULL if a is NULL or a->len is 0 (because you can't pop from a 0
-                                                               length string)
-*/
-wchar_t ws_pop(WString *a);
+/* Adds values[0 .. n - 1] to the end of a, in order, and returns true. Returns false,
+ and leaves a unchanged, if a or values is NULL or memory runs out. The caller still
+ owns values. */
+bool ws_add_all(ws a, wchar_t *values, size_t n);
 
 #endif
