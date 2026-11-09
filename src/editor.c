@@ -14,7 +14,7 @@ void draw_editor(WINDOW *win, WString *text, unsigned int height, unsigned int w
 
     box(win, 0, 0); // border
 
-    WS_Stats *stats = ws_fit_window(text, win);
+    // WS_Stats *stats = ws_fit_window(text, win);
 
     // Text starts at row 1, column 1 because row 0 & column 0 are used by the border.
     //for (int y = 0; y < (int) stats->height && y < editorheight - 2; y++) {
