@@ -18,7 +18,7 @@ int main()
     initscr();
     noecho();
     cbreak(); // no buffering
-    keypad(stdscr, TRUE); // enable arrow and f keys
+    keypad(stdscr, true); // enable arrow and f keys
     curs_set(TRUE); // Show terminal cursor.
 
     ws message = ws_new();
@@ -26,19 +26,33 @@ int main()
     for (size_t i = 0; i < wcslen(initial_content); i++)
         ws_add(message, initial_content[i]);
 
-    WINDOW *editor = newwin(2, LINES, COLS, 1);
-
     if (LINES < 10 || COLS < 30) {
         endwin();
         fprintf(stderr, "Terminal is too small.\nPlease resize it to at least 30x10.\n");
         return 1;
     }
+
+    WINDOW *editor = newwin(5, COLS, LINES - 5, 0);
+
+    if (!editor) {
+        endwin();
+        fprintf(stderr, "Failed to create window\n");
+        return 1;
+    }
+
+    refresh();
+
+    keypad(editor, true);
+    werase(editor);
+    box(editor, 0, 0);
+    wmove(editor, 1, 1);
+    waddnwstr(editor, message->data, message->count);
+    wrefresh(editor);
+
     // MAIN EVENT LOOP
-    wint_t ch;
-    addnwstr(message->data, message->count);
-    wrefresh(stdscr);
     bool running = true;
     while (running) {
+        wint_t ch;
         int result = wget_wch(stdscr, &ch);
 
         switch (result) {
@@ -53,7 +67,7 @@ int main()
                 else if (ch >= L' ') {
                     ws_add(message, ch);
                 } // quit
-                else if (ch == CTRL(L'x') || ch == CTRL(L'q'))
+                else if (ch == CTRL(L'x') || ch == CTRL(L'q') || ch == CTRL(L'c'))
                     running = false;
 
                 break;
@@ -61,20 +75,7 @@ int main()
             case KEY_CODE_YES: // Special key
                 switch (ch) {
                     case KEY_LEFT:
-                        // move_left(text);
-                        break;
-
-                    case KEY_RIGHT:
-                        // move_right(text);
-                        break;
-
-                    case KEY_UP:
-                        // move_up(text);
-                        break;
-
-                    case KEY_DOWN:
-                        // move_down(text);
-                        break;
+                        // move_left(text); break; case KEY_RIGHT: move_right(text); break; case KEY_UP: move_up(text); break; case KEY_DOWN: move_down(text); break;
 
                     case KEY_BACKSPACE:
                         // backspace(text);
@@ -101,8 +102,10 @@ int main()
                 break;
         }
 
-        erase();
-        addnwstr(message->data, message->count);
+        werase(editor);
+        box(editor, 0, 0);
+        wmove(editor, 1, 1);
+        waddnwstr(editor, message->data, message->count);
         wrefresh(editor);
     }
 
