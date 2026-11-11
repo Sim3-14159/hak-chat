@@ -12,3 +12,9 @@ typedef struct {
     size_t count;
     size_t capacity;
 } MWString; // Multiline wide String
+
+typedef MWString *mw;
+
+bool mws_add(mw mwstr, ws wstr)
+{
+}
