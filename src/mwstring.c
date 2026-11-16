@@ -8,15 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Multiline wide String
-typedef struct {
-    WString *strings;
-    int count;
-    int capacity;
-} MWString;
-
-typedef MWString *mw;
-
 #define INITIAL_SIZE 8
 #define X(p)                                                                                       \
     if (!p)                                                                                        \
@@ -48,11 +39,15 @@ bool mws_addWChar(mw mwstr, wchar_t chr)
 // TODO:
 MWString *mws_new(void)
 {
-    ws new = malloc(sizeof(MWString));
+    mw new = malloc(sizeof(MWString));
     X(new);
 
     new->count = 0;
-    new->data = malloc((sizeof(wchar_t) * INITIAL_SIZE));
+    ws line0 = ws_new();
+    X(line0);
+
+    new->strings = malloc(sizeof(*(new->strings))); // just alloc 1 line for now
+    new->strings[0] = line0;
     new->capacity = INITIAL_SIZE;
     if (!new->data) {
         free(new->data);

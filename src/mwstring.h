@@ -6,7 +6,7 @@
 
 // Multiline wide String
 typedef struct {
-    WString *strings;
+    ws *strings;
     int count;
     int capacity;
 } MWString;
