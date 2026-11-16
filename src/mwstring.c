@@ -1,5 +1,6 @@
 #define _XOPEN_SOURCE_EXTENDED
 #include "wstring.h"
+#include "mwstring.h"
 
 #include <locale.h>
 #include <ncursesw/ncurses.h>
@@ -28,6 +29,10 @@ bool mws_addWString(mw mwstr, ws wstr)
     if (!mwstr || !wstr)
         return false;
 
+    if (mwstr->count >= mwstr->capacity - 1) {
+        mws_reserve(mwstr, mwstr->capacity * 2);
+    }
+
     return true;
 }
 
@@ -41,7 +46,7 @@ bool mws_addWChar(mw mwstr, wchar_t chr)
 }
 
 // TODO:
-WString *mws_new(void)
+MWString *mws_new(void)
 {
     ws new = malloc(sizeof(MWString));
     X(new);
@@ -67,7 +72,7 @@ void mws_free(ws a)
 }
 
 // TODO:
-size_t mws_count(const WString *a)
+size_t mws_count(const MWString *a)
 {
     if (!a)
         return 0;
@@ -75,7 +80,7 @@ size_t mws_count(const WString *a)
 }
 
 // TODO:
-bool mws_reserve(WString *a, size_t n)
+bool mws_reserve(MWString *a, size_t n)
 {
     if (!a)
         return false;
@@ -94,7 +99,7 @@ bool mws_reserve(WString *a, size_t n)
 }
 
 // TODO:
-bool mws_add(WString *a, wchar_t value)
+bool mws_add(MWString *a, wchar_t value)
 {
     if (!a)
         return false;
@@ -109,7 +114,7 @@ bool mws_add(WString *a, wchar_t value)
 }
 
 // TODO:
-bool mws_insert(WString *a, size_t i, wchar_t value)
+bool mws_insert(MWString *a, size_t i, wchar_t value)
 {
     if (!a || i > a->count)
         return false;
@@ -127,7 +132,7 @@ bool mws_insert(WString *a, size_t i, wchar_t value)
 }
 
 // TODO:
-bool mws_get(const WString *a, size_t i, wchar_t *out)
+bool mws_get(const MWString *a, size_t i, wchar_t *out)
 {
     if (!a || !out || i >= a->count)
         return false;
@@ -136,7 +141,7 @@ bool mws_get(const WString *a, size_t i, wchar_t *out)
 }
 
 // TODO:
-bool mws_set(WString *a, size_t i, wchar_t value)
+bool mws_set(MWString *a, size_t i, wchar_t value)
 {
     if (!a)
         return false;
@@ -147,7 +152,7 @@ bool mws_set(WString *a, size_t i, wchar_t value)
 }
 
 // TODO:
-bool mws_copy_to(const WString *a, wchar_t *dest, size_t dest_len)
+bool mws_copy_to(const MWString *a, wchar_t *dest, size_t dest_len)
 {
     if (!a || !dest || a->count > dest_len)
         return false;
@@ -158,7 +163,7 @@ bool mws_copy_to(const WString *a, wchar_t *dest, size_t dest_len)
 }
 
 // TODO:
-bool mws_index_of(const WString *a, wchar_t value, size_t *index)
+bool mws_index_of(const MWString *a, wchar_t value, size_t *index)
 {
     if (!a || !index)
         return false;
@@ -173,7 +178,7 @@ bool mws_index_of(const WString *a, wchar_t value, size_t *index)
 }
 
 // TODO:
-bool mws_contains(const WString *a, wchar_t value)
+bool mws_contains(const MWString *a, wchar_t value)
 {
     if (!a)
         return false;
@@ -184,7 +189,7 @@ bool mws_contains(const WString *a, wchar_t value)
 }
 
 // TODO:
-bool mws_remove_at(WString *a, size_t i, wchar_t *out)
+bool mws_remove_at(MWString *a, size_t i, wchar_t *out)
 {
     if (!a || i >= a->count)
         return false;
@@ -199,7 +204,7 @@ bool mws_remove_at(WString *a, size_t i, wchar_t *out)
 }
 
 // TODO:
-bool mws_remove(WString *a, wchar_t value)
+bool mws_remove(MWString *a, wchar_t value)
 {
     if (!a)
         return false;
@@ -215,7 +220,7 @@ bool mws_remove(WString *a, wchar_t value)
 }
 
 // TODO:
-void mws_clear(WString *a)
+void mws_clear(MWString *a)
 {
     if (!a)
         return;

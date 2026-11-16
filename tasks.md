@@ -1,7 +1,19 @@
-This is a bulliten of current taks for hacker_chatter.
-Please write out main tasks and subtasks.
+# Tasks to do
 
-[ ] Port to ncurses
-[ ] add emoji support using :emoji_name: for a few specific emojis
-[ ] Add colored usernames uniqe to each user
+> [!INFO]
+> This is a bulletin of current tasks for hacker_chatter.
 
+- [ ] Create representative Wide character multiline string `struct`.
+- [ ] Make the editor work well (arrow keys, soft wrapping, etc)
+- [ ] Create a medium to transfer messages through.
+  - [ ] Shared file in `/tmp`
+- [ ] Render sent and received messages.
+- [ ] Add configuration (probably reading `~/.config/hak-chat`)
+- [ ] Add slash commands:
+  - `/nostrip`
+  - `/sl`
+  - `/yes`
+  - ...
+- [ ] Add DMing?
+- [ ] Add @ mentions
+- [ ] Add file sharing capabilities? (`#filename` to attach it)

@@ -1,10 +1,6 @@
-/* dynamic_array.c - your implementation of dynamic_array.h.
-
-   The one rule: do not call realloc. Allocate the bigger block, copy the data across and
-   free the old block yourself. The rest of the standard C library is allowed.
-
-   Every function below is a stub. It compiles and returns something harmless, so
-   `make m1` runs from the start. Replace each stub's body with your own code. */
+/**
+ * Wide character String function definitions
+ */
 
 #include <stdlib.h>
 
