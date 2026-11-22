@@ -20,7 +20,7 @@ bool mws_addWString(mw mwstr, ws wstr)
     if (!mwstr || !wstr)
         return false;
 
-    if (mwstr->count >= mwstr->capacity - 1) {
+    if (mwstr->count >= mwstr->capacity - 1)
         mws_reserve(mwstr, mwstr->capacity * 2);
     }
 
